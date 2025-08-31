@@ -5,11 +5,16 @@
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWindowsForms>false</UseWindowsForms>
+ <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\FoundryOcr\FoundryOcr.csproj" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.250814004-preview" />
+  
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.7" />
+    <PackageReference Include="Microsoft.Windows.SDK.Vision" Version="0.0.2-alpha" />
+    <PackageReference Include="Microsoft.Windows.SDK.AI" Version="0.0.4-alpha" />
+
   </ItemGroup>
 
 </Project>
