@@ -72,7 +72,7 @@ public static class OcrService
 
     public static async Task<string> RecognizeAsJsonFromStreamAsync(Stream input, bool indented = false)
         => JsonSerialize(await RecognizeFromStreamAsync(input), indented);
-
+//AIFeatureReadyResultState.Success
     public static async Task<OcrResultDto> RecognizeFromBytesAsync(byte[] bytes)
     {
         if (bytes is null || bytes.Length == 0)
@@ -97,7 +97,7 @@ public static class OcrService
 
     private static async Task<TextRecognizer> EnsureRecognizerReadyAsync()
     {
-        if (TextRecognizer.GetReadyState() == AIFeatureReadyState.notsupportedbysystem)
+        if (TextRecognizer.GetReadyState() == AIFeatureReadyState.NotSupportedOnCurrentsystem)
         {
             var load = await TextRecognizer.EnsureReadyAsync();
             if (load.Status != PackageDeploymentStatus.CompletedSuccess)
@@ -125,7 +125,7 @@ public static class OcrService
                 lineDto.Words.Add(new OcrWordDto
                 {
                     Text = word.Text,
-                    Confidence = word.Confidence,
+                    Confidence = word.MatchConfidence,
                     TopLeft = (b.TopLeft.X, b.TopLeft.Y),
                     TopRight = (b.TopRight.X, b.TopRight.Y),
                     BottomRight = (b.BottomRight.X, b.BottomRight.Y),
