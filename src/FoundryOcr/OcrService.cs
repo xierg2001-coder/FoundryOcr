@@ -5,12 +5,12 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Windows.AI;
+using Microsoft.Windows.AI.Imaging;
 using Microsoft.Graphics.Imaging;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using System.Runtime.InteropServices.WindowsRuntime;
-using Microsoft.Windows.AI.image;
 using Microsoft.Windows.ApplicationModel.DynamicDependency;
 
 
