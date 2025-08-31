@@ -11,6 +11,9 @@ using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Microsoft.Windows.AI.imaging;
+using Microsoft.Windows.ApplicationModel.DynamicDependency;
+
 
 namespace FoundryOcr;
 
@@ -95,11 +98,11 @@ public static class OcrService
 
     private static async Task<TextRecognizer> EnsureRecognizerReadyAsync()
     {
-        if (TextRecognizer.GetReadyState() == AIFeatureReadyState.EnsureNeeded)
+        if (TextRecognizer.GetReadyState() == AIFeatureReadyState.notsupportedbysystem)
         {
             var load = await TextRecognizer.EnsureReadyAsync();
             if (load.Status != PackageDeploymentStatus.CompletedSuccess)
-                throw new Exception(load.ExtendedError().Message);
+                throw new Exception(load.ExtendedErr.Message);
         }
         return await TextRecognizer.CreateAsync();
     }
