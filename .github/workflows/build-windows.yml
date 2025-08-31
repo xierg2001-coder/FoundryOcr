@@ -20,6 +20,8 @@ jobs:
             8.0.x
 
       - name: Restore
+        run: dotnet restore --prerelease
+      - name: Restore
         run: dotnet restore .\FoundryOcr.sln
 
       - name: Build (Release)
