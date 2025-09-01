@@ -28,7 +28,7 @@ jobs:
 
       - name: Publish CLI (win-x64)
         run: >
-          dotnet publish .\src\FoundryOcr.Cli\FoundryOcr.Cli.csproj
+          dotnet publish .\src\FoundryOcr\FoundryOcr.csproj
           -c Release
           -f net8.0-windows10.0.19041.0
           -r win-x64
@@ -37,6 +37,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: FoundryOcr.Cli-win-x64
+          name: FoundryOcr-win-x64
           path: |
-            src/FoundryOcr.Cli/bin/Release/net8.0-windows10.0.19041.0/win-x64/publish/**
+            src/FoundryOcr
+            /bin/Release/net8.0-windows10.0.19041.0/win-x64/publish/**
