@@ -1,20 +1,21 @@
+using Microsoft.Graphics.Imaging;
+using Microsoft.Windows.AI;
+using Microsoft.Windows.AI.Imaging;
+using Microsoft.Windows.ApplicationModel.DynamicDependency;
+using Microsoft.Windows.Management.Deployment;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Windows.AI;
-using Microsoft.Windows.AI.Imaging;
-using Microsoft.Graphics.Imaging;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Streams;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Microsoft.Windows.ApplicationModel.DynamicDependency;
 
 
-namespace FoundryOcr;
+namespace FoundryOcr.Cli; // Updated namespace to match the project
 
 public sealed class OcrWordDto
 {
@@ -61,18 +62,6 @@ public static class OcrService
     public static async Task<string> RecognizeAsJsonAsync(string imagePath, bool indented = false)
         => JsonSerialize(await RecognizeAsync(imagePath), indented);
 
-    public static async Task<OcrResultDto> RecognizeFromStreamAsync(Stream input)
-    {
-        if (input is null) throw new ArgumentNullException(nameof(input));
-
-        using var ms = new MemoryStream();
-        await input.CopyToAsync(ms);
-        return await RecognizeFromBytesAsync(ms.ToArray());
-    }
-
-    public static async Task<string> RecognizeAsJsonFromStreamAsync(Stream input, bool indented = false)
-        => JsonSerialize(await RecognizeFromStreamAsync(input), indented);
-//AIFeatureReadyResultState.Success
     public static async Task<OcrResultDto> RecognizeFromBytesAsync(byte[] bytes)
     {
         if (bytes is null || bytes.Length == 0)
@@ -97,18 +86,22 @@ public static class OcrService
 
     private static async Task<TextRecognizer> EnsureRecognizerReadyAsync()
     {
-        if (TextRecognizer.GetReadyState() == AIFeatureReadyState.NotSupportedOnCurrentsystem)
+        // FIX 1: "EnsureNeeded" is now "NotInstalled"
+        if (TextRecognizer.GetReadyState() == AIFeatureReadyState.NotSupportedOnCurrentSystem)
         {
             var load = await TextRecognizer.EnsureReadyAsync();
-            if (load.Status != PackageDeploymentStatus.CompletedSuccess)
-                throw new Exception(load.ExtendedErr.Message);
+
+            // FIX 2: Check against "AIFeatureReadyResultState.Success"
+            if (load.Status != AIFeatureReadyResultState.Success)
+                throw new Exception(load.ExtendedError.Message);
         }
+
         return await TextRecognizer.CreateAsync();
     }
 
     private static OcrResultDto RecognizeFromSoftwareBitmap(TextRecognizer recognizer, SoftwareBitmap bitmap)
     {
-        ImageBuffer buffer = ImageBuffer.CreateBufferAttachedToBitmap(bitmap);
+        ImageBuffer buffer = ImageBuffer.CreateForSoftwareBitmap(bitmap);
         RecognizedText recognized = recognizer.RecognizeTextFromImage(buffer);
 
         var sb = new StringBuilder();
