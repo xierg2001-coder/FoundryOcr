@@ -12,17 +12,26 @@ internal static class Program
 {
     static async Task<int> Main(string[] args)
     {
-        bool useStdin = args.Any(a => a.Equals("--stdin", StringComparison.OrdinalIgnoreCase));
-        bool pretty   = args.Any(a => a.Equals("--pretty", StringComparison.OrdinalIgnoreCase));
-        bool isBase64 = args.Any(a => a.Equals("--base64", StringComparison.OrdinalIgnoreCase));
+        if (args.Any(a => a.Equals("--help", StringComparison.OrdinalIgnoreCase)) || args.Length == 0)
+        {
+            PrintUsage();
+            return 0;
+        }
 
+        bool useStdin = args.Contains("--stdin", StringComparer.OrdinalIgnoreCase);
+        bool pretty = args.Contains("--pretty", StringComparer.OrdinalIgnoreCase);
+        bool isBase64 = args.Contains("--base64", StringComparer.OrdinalIgnoreCase);
         string? pathArg = args.FirstOrDefault(a => !a.StartsWith("--", StringComparison.Ordinal));
+        string? outFile = GetOptionValue(args, "--out");
+        string? langCode = GetOptionValue(args, "--lang");
 
         if (!isBase64 && !useStdin && string.IsNullOrWhiteSpace(pathArg))
         {
+            Console.Error.WriteLine("Missing image path.");
             PrintUsage();
             return 2;
         }
+
         if (isBase64 && !useStdin)
         {
             pathArg = GetOptionValue(args, "--base64");
@@ -32,6 +41,7 @@ internal static class Program
                 return 2;
             }
         }
+
         if (!string.IsNullOrWhiteSpace(pathArg) && (useStdin && isBase64))
         {
             Console.Error.WriteLine("When using --stdin --base64, do not also pass a file path.");
@@ -41,21 +51,13 @@ internal static class Program
         try
         {
             Bootstrap.Initialize(0);
-
             string json;
 
             if (isBase64)
             {
-                string base64;
-                if (useStdin)
-                {
-                    using var reader = new StreamReader(Console.OpenStandardInput(), Encoding.UTF8, true);
-                    base64 = await reader.ReadToEndAsync();
-                }
-                else
-                {
-                    base64 = pathArg!;
-                }
+                string base64 = useStdin
+                    ? await new StreamReader(Console.OpenStandardInput(), Encoding.UTF8).ReadToEndAsync()
+                    : pathArg!;
 
                 byte[] bytes = DecodeBase64(base64);
                 json = await OcrService.RecognizeAsJsonFromBytesAsync(bytes, indented: pretty);
@@ -70,7 +72,11 @@ internal static class Program
                 json = await OcrService.RecognizeAsJsonAsync(pathArg!, indented: pretty);
             }
 
-            Console.Out.WriteLine(json);
+            if (!string.IsNullOrWhiteSpace(outFile))
+                await File.WriteAllTextAsync(outFile, json);
+            else
+                Console.Out.WriteLine(json);
+
             return 0;
         }
         catch (FormatException fex)
@@ -116,9 +122,10 @@ internal static class Program
     {
         Console.Error.WriteLine(
 @"Usage:
-  FoundryOcr.Cli.exe <imagePath> [--pretty]
-  FoundryOcr.Cli.exe --stdin [--pretty]
-  FoundryOcr.Cli.exe --base64 <base64String> [--pretty]
-  FoundryOcr.Cli.exe --stdin --base64 [--pretty]");
+  FoundryOcr.Cli.exe <imagePath> [--pretty] [--out <file>] [--lang <code>]
+  FoundryOcr.Cli.exe --stdin [--pretty] [--out <file>] [--lang <code>]
+  FoundryOcr.Cli.exe --base64 <base64String> [--pretty] [--out <file>] [--lang <code>]
+  FoundryOcr.Cli.exe --stdin --base64 [--pretty] [--out <file>] [--lang <code>]
+  FoundryOcr.Cli.exe --help");
     }
 }
