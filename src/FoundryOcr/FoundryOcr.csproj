@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>false</UseWindowsForms>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+   <EnableMsixTooling>true</EnableMsixTooling>
   </PropertyGroup>
 
   <ItemGroup>
