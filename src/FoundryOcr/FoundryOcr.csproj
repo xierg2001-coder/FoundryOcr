@@ -10,8 +10,12 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
    <EnableMsixTooling>true</EnableMsixTooling>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    <SelfContained>false</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+<WindowsAppSdkUndockedRegFreeWinRTInitialize>true</WindowsAppSdkUndockedRegFreeWinRTInitialize>
+<UseCrtSDKReferenceStaticWarning>false</UseCrtSDKReferenceStaticWarning>
+
+
   </PropertyGroup>
   <ItemGroup>
   <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250606001" />
