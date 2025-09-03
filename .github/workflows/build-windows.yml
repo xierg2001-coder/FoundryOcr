@@ -4,6 +4,7 @@ on:
   push:
     branches: [ main, ci/**, feature/** ]
   pull_request:
+    branches: [ main ]
 
 jobs:
   build:
@@ -16,15 +17,24 @@ jobs:
       - name: Setup .NET 6
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: |
-            6.0.x
+          dotnet-version: 6.0.36
+      - name: Restore dependencies
+        run: dotnet restore ./FoundryOcr.sln
+      
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v2
 
+      - name: Setup MSBuild dependencies
+        run: choco install visualstudio2022buildtools microsoft-visualstudio-installer-projects --package-parameters="--add Microsoft.VisualStudio.Component.Windows10SDK"
       
       - name: Restore
         run: dotnet restore .\FoundryOcr.sln
 
-      - name: Build (Release)
-        run: dotnet build .\FoundryOcr.sln -c Release
+      - name: Build with MSBuild
+        run: msbuild ./FoundryOcr.sln -p:Configuration=Release -restore
+
+      - name: Build
+        run: dotnet build ./FoundryOcr.sln --configuration Release --no-restore
 
       - name: Publish CLI (win-x64)
         run: >
