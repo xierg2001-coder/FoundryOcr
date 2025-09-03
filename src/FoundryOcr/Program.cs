@@ -50,7 +50,7 @@ internal static class Program
 
         try
         {
-            Bootstrap.Initialize(1);
+            Bootstrap.Initialize(1, "stable");
             string json;
 
             if (isBase64)
