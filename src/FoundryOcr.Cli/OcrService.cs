@@ -15,7 +15,7 @@ using Windows.Storage;
 using Windows.Storage.Streams;
 
 
-namespace FoundryOcr.Cli; // Updated namespace to match the project
+namespace FoundryOcr; // Updated namespace to match the project
 
 public sealed class OcrWordDto
 {
