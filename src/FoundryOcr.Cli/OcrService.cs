@@ -59,6 +59,22 @@ public static class OcrService
         return RecognizeFromSoftwareBitmap(recognizer, softwareBitmap);
     }
 
+public static async Task<string> RecognizeAsJsonFromStreamAsync(Stream stream, bool indented = false)
+{
+    using var ras = new InMemoryRandomAccessStream();
+    await stream.CopyToAsync(ras.AsStreamForWrite());
+    ras.Seek(0);
+
+    var decoder = await BitmapDecoder.CreateAsync(ras);
+    var softwareBitmap = await decoder.GetSoftwareBitmapAsync();
+    if (softwareBitmap is null)
+        throw new InvalidOperationException("Invalid image stream.");
+
+    var recognizer = await EnsureRecognizerReadyAsync();
+    var result = RecognizeFromSoftwareBitmap(recognizer, softwareBitmap);
+    return JsonSerialize(result, indented);
+}
+
     public static async Task<string> RecognizeAsJsonAsync(string imagePath, bool indented = false)
         => JsonSerialize(await RecognizeAsync(imagePath), indented);
 
