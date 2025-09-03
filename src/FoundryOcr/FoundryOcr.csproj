@@ -3,6 +3,9 @@
   <PropertyGroup>
   <OutputType>Exe</OutputType>
     <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+
+
+
     <Nullable>enable</Nullable>
    <Platforms>x64</Platforms>
     <UseWindowsForms>false</UseWindowsForms>
@@ -12,7 +15,8 @@
     <SelfContained>false</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
-
+<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+<WindowsAppSDKVersion>1.7.250606001</WindowsAppSDKVersion>
   <ItemGroup>
   <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250606001" />
 </ItemGroup>
