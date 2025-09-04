@@ -1,23 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-  <OutputType>Exe</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
-
     <Nullable>enable</Nullable>
-   <Platforms>x64</Platforms>
-    <UseWindowsForms>false</UseWindowsForms>
+    <Platforms>x64</Platforms>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
-   <EnableMsixTooling>true</EnableMsixTooling>
+
+    <!-- Unpackaged + Self-contained WinAppSDK -->
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+
+    <!-- Ensure undocked reg-free WinRT is on (needed for self-contained unpackaged) -->
+    <WindowsAppSdkUndockedRegFreeWinRTInitialize>true</WindowsAppSdkUndockedRegFreeWinRTInitialize>
+
+    <!-- IMPORTANT: disable dynamic-dependency auto-bootstrapper -->
+    <WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
+
+    <!-- Optional / project-specific flags you already had -->
+    <UseWindowsForms>false</UseWindowsForms>
+    <EnableMsixTooling>true</EnableMsixTooling>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <UseCrtSDKReferenceStaticWarning>false</UseCrtSDKReferenceStaticWarning>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-<WindowsAppSdkUndockedRegFreeWinRTInitialize>true</WindowsAppSdkUndockedRegFreeWinRTInitialize>
-<UseCrtSDKReferenceStaticWarning>false</UseCrtSDKReferenceStaticWarning>
-
-
   </PropertyGroup>
+
   <ItemGroup>
-  <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250310001" />
-</ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250513003" />
+  </ItemGroup>
 </Project>
