@@ -14,7 +14,7 @@
 <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
 <WindowsAppSdkUndockedRegFreeWinRTInitialize>true</WindowsAppSdkUndockedRegFreeWinRTInitialize>
 <UseCrtSDKReferenceStaticWarning>false</UseCrtSDKReferenceStaticWarning>
-
+<WindowsPackageType>None</WindowsPackageType>
 
   </PropertyGroup>
   <ItemGroup>
