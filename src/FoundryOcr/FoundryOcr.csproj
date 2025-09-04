@@ -1,29 +1,25 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup>
+  <!-- Your existing settings ... -->
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <Platforms>x64</Platforms>
-    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  <!-- Turn this app project into a single-project MSIX packager -->
+  <WindowsPackageType>MSIX</WindowsPackageType>
+  <EnableMsixTooling>true</EnableMsixTooling>
 
-    <!-- Self-contained WinAppSDK -->
-    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+  <!-- Point to your MSIX manifest file -->
+  <AppxManifest>Package.appxmanifest</AppxManifest>
 
-    <!-- MSIX packaging -->
-    <WindowsPackageType>MSIX</WindowsPackageType>
-    <EnableMsixTooling>true</EnableMsixTooling>
+  <!-- Optional but typical packaging knobs -->
+  <AppxBundle>Always</AppxBundle>
+  <AppxBundlePlatforms>x64</AppxBundlePlatforms>
 
-    <!-- .NET self-contained publish -->
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <SelfContained>true</SelfContained>
+  <!-- Self-contained .NET runtime baked in -->
+  <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+  <SelfContained>true</SelfContained>
+</PropertyGroup>
 
-    <!-- Optional: disable bootstrapper (not needed for self-contained) -->
-    <WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250310001" />
-  </ItemGroup>
-
-</Project>
+<ItemGroup>
+  <!-- Make sure the manifest is included in the project -->
+  <None Include="Package.appxmanifest" />
+  <!-- Include your image assets (replace with your actual paths) -->
+  <Content Include="Images\**\*.*" />
+</ItemGroup>
