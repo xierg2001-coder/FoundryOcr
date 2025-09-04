@@ -4,82 +4,53 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FoundryOcr;
-using Microsoft.Windows.ApplicationModel.DynamicDependency;
 
 namespace FoundryOcr.Cli;
 
 internal static class Program
 {
-    // Adjust this to the WinAppSDK major.minor you target:
-    // 1.6 => 0x00010006, 1.5 => 0x00010005, etc.
-    private const uint WindowsAppSdk_Version = 0x00010007;
-
     [STAThread]
     static async Task<int> Main(string[] args)
     {
-        bool bootstrapInitialized = false;
-
-        // --- Initialize Windows App SDK as early as possible ---
-        try
+        if (args.Any(a => a.Equals("--help", StringComparison.OrdinalIgnoreCase)) || args.Length == 0)
         {
-            Bootstrap.Initialize(WindowsAppSdk_Version);
-            bootstrapInitialized = true;
-
-            // Ensure shutdown on process termination & Ctrl+C
-            AppDomain.CurrentDomain.ProcessExit += static (_, __) =>
-            {
-                try { Bootstrap.Shutdown(); } catch { /* best-effort */ }
-            };
-            Console.CancelKeyPress += static (_, __) =>
-            {
-                try { Bootstrap.Shutdown(); } catch { /* best-effort */ }
-            };
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Windows App SDK bootstrap failed:");
-            Console.Error.WriteLine(ex.ToString());
-            return 10; // distinct exit code for bootstrap failure
+            PrintUsage();
+            return 0;
         }
 
+        bool useStdin = args.Contains("--stdin", StringComparer.OrdinalIgnoreCase);
+        bool pretty = args.Contains("--pretty", StringComparer.OrdinalIgnoreCase);
+        bool isBase64 = args.Contains("--base64", StringComparer.OrdinalIgnoreCase);
+
+        string? pathArg = args.FirstOrDefault(a => !a.StartsWith("--", StringComparison.Ordinal));
+        string? outFile = GetOptionValue(args, "--out");
+        string? langCode = GetOptionValue(args, "--lang"); // reserved for future use
+
+        if (!isBase64 && !useStdin && string.IsNullOrWhiteSpace(pathArg))
+        {
+            Console.Error.WriteLine("Missing image path.");
+            PrintUsage();
+            return 2;
+        }
+
+        if (isBase64 && !useStdin)
+        {
+            pathArg = GetOptionValue(args, "--base64");
+            if (string.IsNullOrWhiteSpace(pathArg))
+            {
+                Console.Error.WriteLine("Missing base64 string after --base64.");
+                return 2;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(pathArg) && (useStdin && isBase64))
+        {
+            Console.Error.WriteLine("When using --stdin --base64, do not also pass a file path.");
+            return 2;
+        }
+
         try
         {
-            if (args.Any(a => a.Equals("--help", StringComparison.OrdinalIgnoreCase)) || args.Length == 0)
-            {
-                PrintUsage();
-                return 0;
-            }
-
-            bool useStdin = args.Contains("--stdin", StringComparer.OrdinalIgnoreCase);
-            bool pretty = args.Contains("--pretty", StringComparer.OrdinalIgnoreCase);
-            bool isBase64 = args.Contains("--base64", StringComparer.OrdinalIgnoreCase);
-            string? pathArg = args.FirstOrDefault(a => !a.StartsWith("--", StringComparison.Ordinal));
-            string? outFile = GetOptionValue(args, "--out");
-            string? langCode = GetOptionValue(args, "--lang"); // (optional) not used yet
-
-            if (!isBase64 && !useStdin && string.IsNullOrWhiteSpace(pathArg))
-            {
-                Console.Error.WriteLine("Missing image path.");
-                PrintUsage();
-                return 2;
-            }
-
-            if (isBase64 && !useStdin)
-            {
-                pathArg = GetOptionValue(args, "--base64");
-                if (string.IsNullOrWhiteSpace(pathArg))
-                {
-                    Console.Error.WriteLine("Missing base64 string after --base64.");
-                    return 2;
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(pathArg) && (useStdin && isBase64))
-            {
-                Console.Error.WriteLine("When using --stdin --base64, do not also pass a file path.");
-                return 2;
-            }
-
             string json;
 
             if (isBase64)
@@ -118,14 +89,6 @@ internal static class Program
             Console.Error.WriteLine(ex.ToString());
             return 1;
         }
-        finally
-        {
-            // --- Shutdown Windows App SDK before exit ---
-            if (bootstrapInitialized)
-            {
-                try { Bootstrap.Shutdown(); } catch { /* best-effort */ }
-            }
-        }
     }
 
     private static string? GetOptionValue(string[] args, string optionName)
@@ -146,6 +109,7 @@ internal static class Program
     {
         if (string.IsNullOrWhiteSpace(base64))
             throw new FormatException("Empty base64 string.");
+
         base64 = base64.Trim();
         return Convert.FromBase64String(base64);
     }
