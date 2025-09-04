@@ -46,7 +46,7 @@
   <!-- Include your image assets (replace with your actual paths) -->
   <Content Include="Images\**\*.*" />
 
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250310001" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250513003" />
   </ItemGroup>
 
 </Project>
