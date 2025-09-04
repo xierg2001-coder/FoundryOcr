@@ -91,7 +91,7 @@ internal static class Program
         }
         finally
         {
-            try { Bootstrap.Shutdown(); } catch { }
+            try { } catch { }
         }
     }
 
