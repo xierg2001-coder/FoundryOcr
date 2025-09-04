@@ -122,10 +122,10 @@ internal static class Program
     {
         Console.Error.WriteLine(
 @"Usage:
-  FoundryOcr.Cli.exe <imagePath> [--pretty] [--out <file>] [--lang <code>]
-  FoundryOcr.Cli.exe --stdin [--pretty] [--out <file>] [--lang <code>]
-  FoundryOcr.Cli.exe --base64 <base64String> [--pretty] [--out <file>] [--lang <code>]
-  FoundryOcr.Cli.exe --stdin --base64 [--pretty] [--out <file>] [--lang <code>]
-  FoundryOcr.Cli.exe --help");
+  FoundryOcr.exe <imagePath> [--pretty] [--out <file>] [--lang <code>]
+  FoundryOcr.exe --stdin [--pretty] [--out <file>] [--lang <code>]
+  FoundryOcr.exe --base64 <base64String> [--pretty] [--out <file>] [--lang <code>]
+  FoundryOcr.exe --stdin --base64 [--pretty] [--out <file>] [--lang <code>]
+  FoundryOcr.exe --help");
     }
 }
