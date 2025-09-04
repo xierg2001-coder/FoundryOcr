@@ -21,11 +21,6 @@
     <!-- Optional: disable bootstrapper (not needed for self-contained) -->
     <WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
 
-
-<!-- Turn this app project into a single-project MSIX packager -->
-  <WindowsPackageType>MSIX</WindowsPackageType>
-  <EnableMsixTooling>true</EnableMsixTooling>
-
   <!-- Point to your MSIX manifest file -->
   <AppxManifest>Package.appxmanifest</AppxManifest>
 
