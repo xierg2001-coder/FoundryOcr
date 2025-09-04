@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  IgnorableNamespaces="uap">
+
+  <Identity Name="XRG.foundryocr"
+            Publisher="XRG"
+            Version="1.0.0.0" />
+
+  <Properties>
+    <DisplayName>Foundry OCR CLI</DisplayName>
+    <PublisherDisplayName>XRG</PublisherDisplayName>
+    <Logo>Images\StoreLogo.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop"
+                        MinVersion="10.0.19041.0"
+                        MaxVersionTested="10.0.99999.0"/>
+  </Dependencies>
+
+  <Applications>
+    <!-- Full-trust console/CLI entry -->
+    <Application Id="App"
+                 Executable="$targetnametoken$.exe"
+                 EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+          DisplayName="Foundry OCR CLI"
+          Description="OCR CLI using Windows AI"
+          BackgroundColor="transparent"
+          Square150x150Logo="Images\Square150x150Logo.png"
+          Square44x44Logo="Images\Square44x44Logo.png" />
+    </Application>
+  </Applications>
+</Package>
