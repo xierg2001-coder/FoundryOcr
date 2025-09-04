@@ -1,0 +1,76 @@
+name: Build MSIX (Self-contained CLI via .wapproj)
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build-msix:
+    runs-on: windows-2022  # VS 2022 image
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      # (Optional) Speed up: Cache NuGet
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      # Publish the CLI as self-contained
+      - name: Publish CLI (self-contained)
+        run: >
+          dotnet publish src/FoundryOcr/FoundryOcr.csproj
+          -c Release -r win-x64 --self-contained true
+          /p:PublishSingleFile=false
+
+      # Materialize PFX from base64 secret
+      - name: Prepare signing certificate
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace("${{ secrets.WINDOWS_PFX_BASE64 }}")) { throw "Missing WINDOWS_PFX_BASE64" }
+          Set-Content cert.b64 "${{ secrets.WINDOWS_PFX_BASE64 }}"
+          certutil -decode cert.b64 signing_cert.pfx | Out-Null
+
+      # Build the .wapproj to produce MSIX bundle (signed)
+      - name: Build Packaging Project
+        shell: pwsh
+        run: >
+          msbuild "src/FoundryOcr.Package/FoundryOcr.Package.wapproj"
+          /restore
+          /p:Configuration=Release
+          /p:Platform=x64
+          /p:GenerateAppxPackageOnBuild=true
+          /p:UapAppxPackageBuildMode=SideloadOnly
+          /p:AppxBundle=Always
+          /p:AppxBundlePlatforms="x64"
+          /p:RuntimeIdentifier=win-x64
+          /p:SelfContained=true
+          /p:PackageCertificateKeyFile="$(Resolve-Path .signing_cert.pfx)"
+          /p:PackageCertificatePassword="${{ secrets.WINDOWS_PFX_PASSWORD }}"
+
+      - name: Collect artifacts
+        shell: pwsh
+        run: |
+          New-Item -Force -ItemType Directory artifacts | Out-Null
+          Get-ChildItem -Recurse -Filter *.msix* | Where-Object FullName -match "AppPackages" |
+            Copy-Item -Destination artifacts/
+          Write-Host "Artifacts:"; Get-ChildItem artifacts
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: msix
+          path: artifacts/*
