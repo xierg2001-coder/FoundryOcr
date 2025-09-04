@@ -10,47 +10,76 @@ namespace FoundryOcr.Cli;
 
 internal static class Program
 {
+    // Adjust this to the WinAppSDK major.minor you target:
+    // 1.6 => 0x00010006, 1.5 => 0x00010005, etc.
+    private const uint WindowsAppSdk_Version = 0x00010007;
+
+    [STAThread]
     static async Task<int> Main(string[] args)
     {
-        if (args.Any(a => a.Equals("--help", StringComparison.OrdinalIgnoreCase)) || args.Length == 0)
-        {
-            PrintUsage();
-            return 0;
-        }
+        bool bootstrapInitialized = false;
 
-        bool useStdin = args.Contains("--stdin", StringComparer.OrdinalIgnoreCase);
-        bool pretty = args.Contains("--pretty", StringComparer.OrdinalIgnoreCase);
-        bool isBase64 = args.Contains("--base64", StringComparer.OrdinalIgnoreCase);
-        string? pathArg = args.FirstOrDefault(a => !a.StartsWith("--", StringComparison.Ordinal));
-        string? outFile = GetOptionValue(args, "--out");
-        string? langCode = GetOptionValue(args, "--lang");
-
-        if (!isBase64 && !useStdin && string.IsNullOrWhiteSpace(pathArg))
+        // --- Initialize Windows App SDK as early as possible ---
+        try
         {
-            Console.Error.WriteLine("Missing image path.");
-            PrintUsage();
-            return 2;
-        }
+            Bootstrap.Initialize(WindowsAppSdk_Version);
+            bootstrapInitialized = true;
 
-        if (isBase64 && !useStdin)
-        {
-            pathArg = GetOptionValue(args, "--base64");
-            if (string.IsNullOrWhiteSpace(pathArg))
+            // Ensure shutdown on process termination & Ctrl+C
+            AppDomain.CurrentDomain.ProcessExit += static (_, __) =>
             {
-                Console.Error.WriteLine("Missing base64 string after --base64.");
-                return 2;
-            }
+                try { Bootstrap.Shutdown(); } catch { /* best-effort */ }
+            };
+            Console.CancelKeyPress += static (_, __) =>
+            {
+                try { Bootstrap.Shutdown(); } catch { /* best-effort */ }
+            };
         }
-
-        if (!string.IsNullOrWhiteSpace(pathArg) && (useStdin && isBase64))
+        catch (Exception ex)
         {
-            Console.Error.WriteLine("When using --stdin --base64, do not also pass a file path.");
-            return 2;
+            Console.Error.WriteLine("Windows App SDK bootstrap failed:");
+            Console.Error.WriteLine(ex.ToString());
+            return 10; // distinct exit code for bootstrap failure
         }
 
         try
         {
-        
+            if (args.Any(a => a.Equals("--help", StringComparison.OrdinalIgnoreCase)) || args.Length == 0)
+            {
+                PrintUsage();
+                return 0;
+            }
+
+            bool useStdin = args.Contains("--stdin", StringComparer.OrdinalIgnoreCase);
+            bool pretty = args.Contains("--pretty", StringComparer.OrdinalIgnoreCase);
+            bool isBase64 = args.Contains("--base64", StringComparer.OrdinalIgnoreCase);
+            string? pathArg = args.FirstOrDefault(a => !a.StartsWith("--", StringComparison.Ordinal));
+            string? outFile = GetOptionValue(args, "--out");
+            string? langCode = GetOptionValue(args, "--lang"); // (optional) not used yet
+
+            if (!isBase64 && !useStdin && string.IsNullOrWhiteSpace(pathArg))
+            {
+                Console.Error.WriteLine("Missing image path.");
+                PrintUsage();
+                return 2;
+            }
+
+            if (isBase64 && !useStdin)
+            {
+                pathArg = GetOptionValue(args, "--base64");
+                if (string.IsNullOrWhiteSpace(pathArg))
+                {
+                    Console.Error.WriteLine("Missing base64 string after --base64.");
+                    return 2;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(pathArg) && (useStdin && isBase64))
+            {
+                Console.Error.WriteLine("When using --stdin --base64, do not also pass a file path.");
+                return 2;
+            }
+
             string json;
 
             if (isBase64)
@@ -91,7 +120,11 @@ internal static class Program
         }
         finally
         {
-            try { } catch { }
+            // --- Shutdown Windows App SDK before exit ---
+            if (bootstrapInitialized)
+            {
+                try { Bootstrap.Shutdown(); } catch { /* best-effort */ }
+            }
         }
     }
 
@@ -113,7 +146,6 @@ internal static class Program
     {
         if (string.IsNullOrWhiteSpace(base64))
             throw new FormatException("Empty base64 string.");
-
         base64 = base64.Trim();
         return Convert.FromBase64String(base64);
     }
