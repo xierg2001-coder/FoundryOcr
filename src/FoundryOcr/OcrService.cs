@@ -103,7 +103,7 @@ public static async Task<string> RecognizeAsJsonFromStreamAsync(Stream stream, b
     private static async Task<TextRecognizer> EnsureRecognizerReadyAsync()
     {
         // FIX 1: "EnsureNeeded" is now "NotInstalled"
-        if (TextRecognizer.GetReadyState() == AIFeatureReadyState.NotSupportedOnCurrentSystem)
+        if (TextRecognizer.GetReadyState() == AIFeatureReadyState.NotReady)
         {
             var load = await TextRecognizer.EnsureReadyAsync();
 
